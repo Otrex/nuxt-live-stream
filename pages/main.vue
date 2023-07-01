@@ -117,11 +117,26 @@
           </div>
           <div class="mt-2">
             <input
+              v-show="streamKey"
               type="button"
               class="px-6 py-2 text-white bg-blue-500 rounded-lg"
               @click="startStreaming"
               value="Start Streaming"
             />
+            <input
+              v-show="!streamKey"
+              type="button"
+              class="px-6 py-2 text-white bg-green-500 rounded-lg"
+              @click="getKeys"
+              value="Generate Key"
+            />
+          </div>
+          <div class="mt-2" v-if="streamCredential && streamCredential.playbackId.length">
+            Share this PlaybackID to view the stream
+            <br/>
+            <code> 
+              {{ streamCredential?.playbackId[0] }}
+            </code>
           </div>
         </div>
       </div>
@@ -144,6 +159,8 @@ const recorderSettings = ref();
 
 const timer = ref();
 const elapsedTime = ref();
+
+const streamCredential = ref();
 
 const devices = reactive({
   video: [],
@@ -172,6 +189,12 @@ onMounted(() => {
 
   timer.value = new Timer();
 });
+
+async function getKeys() {
+  const { data } = await useFetch('/api/getKey')
+  streamCredential.value = data.value;
+  streamKey.value = data.value.key;
+}
 
 function getDevices() {
   navigator.mediaDevices.enumerateDevices().then(function (d) {
